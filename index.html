@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Clipper - AI Style</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        h2 {
+            margin-top: 0;
+            color: #38bdf8;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0ea5e9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 6px;
+            border-left: 4px solid #38bdf8;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🎬 YouTube Video Clipper</h2>
+        <div class="form-group">
+            <label for="videoUrl">Link Video YouTube:</label>
+            <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        <div class="form-group">
+            <label for="startTime">Waktu Mulai (Detik):</label>
+            <input type="number" id="startTime" value="0" min="0">
+        </div>
+        <div class="form-group">
+            <label for="duration">Durasi Klip (Detik):</label>
+            <input type="number" id="duration" value="30" min="5" max="60">
+        </div>
+        <button onclick="processClip()">Buat Klip Sekarang</button>
+
+        <div id="result">
+            <p id="statusText"></p>
+        </div>
+    </div>
+
+    <script>
+        async function processClip() {
+            const videoUrl = document.getElementById('videoUrl').value;
+            const startTime = document.getElementById('startTime').value;
+            const duration = document.getElementById('duration').value;
+            const resultDiv = document.getElementById('result');
+            const statusText = document.getElementById('statusText');
+
+            if (!videoUrl) {
+                alert("Mohon masukkan link YouTube terlebih dahulu!");
+                return;
+            }
+
+            resultDiv.style.display = "block";
+            statusText.innerHTML = "⏳ Sedang memproses permintaan klip ke server...";
+
+            try {
+                const response = await fetch('http://localhost:3000/api/clip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ videoUrl, startTime, duration })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    statusText.innerHTML = `✅ <b>Berhasil!</b> Permintaan untuk video diterima.<br><small>URL: ${data.data.videoUrl} (Mulai: ${data.data.startTime}s, Durasi: ${data.data.duration}s)</small>`;
+                } else {
+                    statusText.innerHTML = `❌ Gagal memproses: ${data.error}`;
+                }
+            } catch (error) {
+                statusText.innerHTML = `❌ Terjadi kesalahan koneksi ke server backend. Pastikan server.js sudah berjalan!`;
+            }
+        }
+    </script>
+
+</body>
+</html>
